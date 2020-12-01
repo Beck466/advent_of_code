@@ -20,7 +20,9 @@ my_input %>%
   unnest(multiplier) %>% 
   mutate(sum = input + multiplier,
          multiple = input * multiplier) %>% 
-  filter(sum == 2020)
+  filter(sum == 2020) %>% 
+  distinct(multiple) %>% 
+  pull()
 ```
 
 Part 2
@@ -34,5 +36,7 @@ my_input %>%
   rename(multiplier_3 = input) %>% 
   mutate(sum = multiplier_1 + multiplier_2 + multiplier_3,
          multiple = multiplier_1 * multiplier_2 * multiplier_3) %>% 
-  filter(sum == 2020)
+  filter(sum == 2020) %>% 
+  distinct(multiple) %>% 
+  pull()
 ```
