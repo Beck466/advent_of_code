@@ -1,0 +1,38 @@
+---
+title: "Day 1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Input
+```{r}
+my_input <- read.csv("day_1_input.csv")
+```
+
+Part 1
+```{r}
+my_input %>% 
+  mutate(multiplier = my_input) %>% 
+  unnest(multiplier) %>% 
+  mutate(sum = input + multiplier,
+         multiple = input * multiplier) %>% 
+  filter(sum == 2020)
+```
+
+Part 2
+```{r}
+my_input %>% 
+  mutate(multiplier_2 = my_input) %>% 
+  unnest(multiplier_2) %>% 
+  rename(multiplier_1 = input) %>% 
+  mutate(multiplier_3 = list(my_input)) %>% 
+  unnest(multiplier_3) %>% 
+  rename(multiplier_3 = input) %>% 
+  mutate(sum = multiplier_1 + multiplier_2 + multiplier_3,
+         multiple = multiplier_1 * multiplier_2 * multiplier_3) %>% 
+  filter(sum == 2020)
+```
