@@ -1,0 +1,50 @@
+---
+title: "Day 2"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Input
+```{r}
+my_input <- read.csv("2020/day_2_input.csv") %>% 
+  separate(col = Input, sep = " ", into = c("limits", "character", "password")) %>% 
+  separate(col = limits, sep = "-", into = c("min", "max")) %>% 
+  mutate(character = str_replace(character, ":", ""))
+  
+# my_input <- tibble(Input = c("1-3 a: abcde",
+# "1-3 b: cdefg",
+# "2-9 c: ccccccccc")) %>%
+#   separate(col = Input, sep = " ", into = c("limits", "character", "password")) %>%
+#   separate(col = limits, sep = "-", into = c("min", "max")) %>%
+#   mutate(character = str_replace(character, ":", ""))
+```
+
+Part 1
+```{r}
+my_input %>% 
+  mutate(min = as.numeric(min),
+         max = as.numeric(max),
+         string = str_extract_all(password, character),
+         number = lengths(string),
+         valid = ifelse(number >= min & number <= max, TRUE, FALSE)) %>% 
+  filter(valid) %>% 
+  count()
+```
+
+Part 2
+```{r}
+my_input %>% 
+  mutate(character_1 = substr(password, min, min),
+         character_2 = substr(password, max, max),
+         valid = case_when(character_1 == character & character_2 == character ~ FALSE,
+                           character_1 == character ~ TRUE,
+                           character_2 == character ~ TRUE, 
+                           TRUE ~ FALSE)) %>% 
+  filter(valid) %>% 
+  count()
+```
+
