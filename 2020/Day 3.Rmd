@@ -10,15 +10,151 @@ library(tidyverse)
 
 Input
 ```{r}
-my_input <- read.csv("day_6_input.csv")
+my_input <- read.csv("day_3_input.csv") %>% 
+  mutate(pattern = as.character(pattern)) %>% 
+  mutate(pattern = str_replace_all(pattern, "#", "1"),
+         pattern = str_replace_all(pattern, "\\.", "0"))
 ```
 
 Part 1
 ```{r}
+mat <- my_input %>% 
+  mutate(var1 = substr(pattern, 1,1),
+         var2 = substr(pattern, 2,2),
+         var3 = substr(pattern, 3,3),
+         var4 = substr(pattern, 4,4),
+         var5 = substr(pattern, 5,5),
+         var6 = substr(pattern, 6,6),
+         var7 = substr(pattern, 7,7),
+         var8 = substr(pattern, 8,8),
+         var9 = substr(pattern, 9,9),
+         var10 = substr(pattern, 10,10),
+         var11 = substr(pattern, 11,11),
+         var12 = substr(pattern, 12,12),
+         var13 = substr(pattern, 13,13),
+         var14 = substr(pattern, 14,14),
+         var15 = substr(pattern, 15,15),
+         var16 = substr(pattern, 16,16),
+         var17 = substr(pattern, 17,17),
+         var18 = substr(pattern, 18,18),
+         var19 = substr(pattern, 19,19),
+         var20 = substr(pattern, 20,20),
+         var21 = substr(pattern, 21,21),
+         var22 = substr(pattern, 22,22),
+         var23 = substr(pattern, 23,23),
+         var24 = substr(pattern, 24,24),
+         var25 = substr(pattern, 25,25),
+         var26 = substr(pattern, 26,26),
+         var27 = substr(pattern, 27,27),
+         var28 = substr(pattern, 28,28),
+         var29 = substr(pattern, 29,29),
+         var30 = substr(pattern, 30,30),
+         var31 = substr(pattern, 31,31)) %>% 
+  select(-pattern)
 
+find_trees <- function(input1, input2) {
+x = input1
+y = input2
+rep_mat[y,x]
+}
+
+data.matrix(mat)
+
+rep_mat <- do.call(cbind, replicate(32, mat, simplify=FALSE))
+
+tibble(x = seq(from = 1, to = nrow(mat)*3, by = 3),
+       y = seq(from = 1, to = nrow(mat), by = 1)) %>% 
+  mutate(value = map2(x, y, find_trees)) %>% 
+  unnest(value) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  summarise_at("value", sum)
 ```
 
 Part 2
 ```{r}
+mat <- my_input %>% 
+  mutate(var1 = substr(pattern, 1,1),
+         var2 = substr(pattern, 2,2),
+         var3 = substr(pattern, 3,3),
+         var4 = substr(pattern, 4,4),
+         var5 = substr(pattern, 5,5),
+         var6 = substr(pattern, 6,6),
+         var7 = substr(pattern, 7,7),
+         var8 = substr(pattern, 8,8),
+         var9 = substr(pattern, 9,9),
+         var10 = substr(pattern, 10,10),
+         var11 = substr(pattern, 11,11),
+         var12 = substr(pattern, 12,12),
+         var13 = substr(pattern, 13,13),
+         var14 = substr(pattern, 14,14),
+         var15 = substr(pattern, 15,15),
+         var16 = substr(pattern, 16,16),
+         var17 = substr(pattern, 17,17),
+         var18 = substr(pattern, 18,18),
+         var19 = substr(pattern, 19,19),
+         var20 = substr(pattern, 20,20),
+         var21 = substr(pattern, 21,21),
+         var22 = substr(pattern, 22,22),
+         var23 = substr(pattern, 23,23),
+         var24 = substr(pattern, 24,24),
+         var25 = substr(pattern, 25,25),
+         var26 = substr(pattern, 26,26),
+         var27 = substr(pattern, 27,27),
+         var28 = substr(pattern, 28,28),
+         var29 = substr(pattern, 29,29),
+         var30 = substr(pattern, 30,30),
+         var31 = substr(pattern, 31,31)) %>% 
+  select(-pattern)
 
+find_trees <- function(input1, input2) {
+x = input1
+y = input2
+rep_mat[y,x]
+}
+
+data.matrix(mat)
+
+rep_mat <- do.call(cbind, replicate(75, mat, simplify=FALSE))
+
+#1,1
+s1_1 <- tibble(x = seq(from = 1, to = nrow(mat), by = 1),
+       y = seq(from = 1, to = nrow(mat), by = 1)) %>% 
+  mutate(value = map2(x, y, find_trees)) %>% 
+  unnest(value) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  summarise_at("value", sum)
+
+#3,1
+s3_1 <- tibble(x = seq(from = 1, to = nrow(mat)*3, by = 3),
+       y = seq(from = 1, to = nrow(mat), by = 1)) %>% 
+  mutate(value = map2(x, y, find_trees)) %>% 
+  unnest(value) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  summarise_at("value", sum)
+
+#5,1
+s5_1 <- tibble(x = seq(from = 1, to = nrow(mat)*5, by = 5),
+       y = seq(from = 1, to = nrow(mat), by = 1)) %>% 
+  mutate(value = map2(x, y, find_trees)) %>% 
+  unnest(value) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  summarise_at("value", sum)
+
+#7,1
+s7_1 <- tibble(x = seq(from = 1, to = nrow(mat)*7, by = 7),
+       y = seq(from = 1, to = nrow(mat), by = 1)) %>% 
+  mutate(value = map2(x, y, find_trees)) %>% 
+  unnest(value) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  summarise_at("value", sum)
+
+#1,2
+s1_2 <- tibble(x = seq(from = 1, to = nrow(mat)/2+1, by = 1),
+       y = seq(from = 1, to = nrow(mat), by = 2)) %>% 
+  mutate(value = map2(x, y, find_trees)) %>% 
+  unnest(value) %>% 
+  mutate(value = as.numeric(value)) %>% 
+  summarise_at("value", sum)
+
+s1_1 * s3_1 * s5_1 * s7_1 * s1_2
 ```
