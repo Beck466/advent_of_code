@@ -1,0 +1,76 @@
+---
+title: "Day 4"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Input
+```{r}
+my_input <- read.delim("day_4_input.txt", sep = "\n\n", header = FALSE)
+
+my_input <- readLines("day_4_input.txt")
+my_input_tibble <- split(my_input, cumsum(rep(0, length(my_input)) + (my_input == ""))) %>% 
+  map_chr(~paste(.x, collapse = " ") %>% str_trim) %>% 
+  as_tibble()
+```
+
+Part 1
+```{r}
+part_1 <- my_input_tibble %>% 
+  mutate(byr = ifelse(str_detect(value, "byr"), TRUE, FALSE),
+         iyr = ifelse(str_detect(value, "iyr"), TRUE, FALSE),
+         eyr = ifelse(str_detect(value, "eyr"), TRUE, FALSE),
+         hgt = ifelse(str_detect(value, "hgt"), TRUE, FALSE),
+         hcl = ifelse(str_detect(value, "hcl"), TRUE, FALSE),
+         ecl = ifelse(str_detect(value, "ecl"), TRUE, FALSE),
+         pid = ifelse(str_detect(value, "pid"), TRUE, FALSE),
+         valid = byr & iyr & eyr & hgt & hcl & ecl & pid) %>% 
+  filter(valid)
+```
+
+Part 2
+```{r}
+my_input_tibble %>% 
+  filter(value %in% part_1$value) %>% 
+  mutate(value = paste(value, " "),
+         byr = str_extract(value, "byr:\\s*(.*?)\\s* "),
+         byr = str_remove(byr, "byr:"),
+         byr = as.numeric(byr),
+         iyr = str_extract(value, "iyr:\\s*(.*?)\\s* "),
+         iyr = str_remove(iyr, "iyr:"),
+         iyr = as.numeric(iyr),
+         eyr = str_extract(value, "eyr:\\s*(.*?)\\s* "),
+         eyr = str_remove(eyr, "eyr:"),
+         eyr = as.numeric(eyr),
+         hgt = str_extract(value, "hgt:\\s*(.*?)\\s* "),
+         hgt = str_remove(hgt, "hgt:"),
+         hgt_units = case_when(str_detect(hgt, "cm") ~ "cm",
+                               str_detect(hgt, "in") ~ "in"),
+         hgt = case_when(str_detect(hgt, "cm") ~ str_remove(hgt, "cm"),
+                         str_detect(hgt, "in") ~ str_remove(hgt, "in")),
+         hgt = as.numeric(hgt),
+         hgt_filter = case_when(hgt_units == "cm" & between(hgt, 150, 193) ~ TRUE,
+                                hgt_units == "in" & between(hgt, 59, 76) ~ TRUE,
+                                TRUE ~ FALSE),
+         hcl = str_extract(value, "hcl:\\s*(.*?)\\s* "),
+         hcl = str_remove(hcl, "hcl:"),
+         hcl = str_squish(hcl),
+         hcl_filter = substr(hcl, 1, 1) == "#" & nchar(hcl) == 7,
+         ecl = str_extract(value, "ecl:\\s*(.*?)\\s* "),
+         ecl = str_remove(ecl, "ecl:"),
+         ecl = str_squish(ecl),
+         pid = str_extract(value, "pid:\\s*(.*?)\\s* "),
+         pid = str_remove(pid, "pid:"),
+         pid = str_squish(pid)) %>% 
+  filter(nchar(byr) == 4, between(byr, 1920, 2002),
+         nchar(iyr) == 4, between(iyr, 2010, 2020),
+         nchar(eyr) == 4, between(eyr, 2020, 2030),
+         hgt_filter,
+         hcl_filter,
+         ecl %in% c("amb", "blu", "brn", "gry", "grn", "hzl", "oth"),
+         nchar(pid) == 9)
+```
