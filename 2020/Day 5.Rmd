@@ -1,0 +1,78 @@
+---
+title: "Day 5"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+my_input <- "FBFBBFFRLR"
+
+my_input <- read.csv("day_5_input.csv") %>% 
+  mutate(input = as.character(input))
+```
+
+Part 1
+```{r}
+find_row <- function(vector){
+min = 0
+max = 127
+
+for(i in 1:7){
+  x = substr(vector, i, i)
+  
+  if(x == "F"){
+    max = floor(midPoint(min, max))
+  }
+  
+  if(x == "B"){
+    min = ceiling(midPoint(min, max))
+  }
+}
+return(min)
+}
+
+find_column <- function(vector){
+min = 0
+max = 7
+
+for(i in 8:10){
+  x = substr(vector, i, i)
+  
+  if(x == "L"){
+    max = floor(midPoint(min, max))
+  }
+  
+  if(x == "R"){
+    min = ceiling(midPoint(min, max))
+  }
+}
+return(min)
+}
+
+taken_seats <- my_input %>% 
+  rowwise() %>% 
+  mutate(row = find_row(input),
+         column = find_column(input),
+         result = (row * 8) + column) %>% 
+  arrange(desc(result))
+  
+```
+
+Part 2
+```{r}
+missing_seats <- expand_grid(n1 = 0:127, n2 = 0:7) %>% 
+  mutate(seat_id = (n1 * 8) + n2,
+         lag = lag(seat_id),
+         lead = lead(seat_id)) %>% 
+  filter(!seat_id %in% taken_seats$result)
+
+missing_seats %>% 
+  filter(!lag %in% seat_id,
+         !lead %in% seat_id)
+```
+
+

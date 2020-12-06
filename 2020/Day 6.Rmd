@@ -1,0 +1,65 @@
+---
+title: "Day 6"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(janitor)
+library(stringi)
+```
+
+Input
+```{r}
+my_input <- readLines("day_6_input.txt")
+my_input_tibble <- split(my_input, cumsum(rep(0, length(my_input)) + (my_input == ""))) %>% 
+  map_chr(~paste(.x, collapse = " ") %>% str_trim) %>% 
+  as_tibble()
+```
+
+Part 1
+```{r}
+find_unique <- function(string){
+  string %>% 
+  str_replace_all(" ", "") %>% 
+  str_split("") %>% 
+  as_vector() %>% 
+  stri_unique()
+}
+
+my_input_tibble %>% 
+  rowwise() %>% 
+  mutate(unique = list(find_unique(value)),
+         length = length(unique)) %>% 
+  ungroup() %>% 
+  summarise(length = sum(length))
+
+```
+
+Part 2
+```{r}
+split_string <- function(string){
+  string %>% 
+  str_split("") %>% 
+    as_vector() %>% 
+  as_tibble()
+}
+
+find_dupes <- function(string){
+  dat <- string %>% 
+  as_tibble() %>% 
+  separate_rows(value, sep = " ") %>% 
+  rowwise() %>% 
+  mutate(characters = list(split_string(value)))
+Reduce(intersect, dat$characters) %>% 
+  length()
+}
+
+my_input_tibble %>% 
+  rowwise() %>% 
+  mutate(dupes = find_dupes(value)) %>% 
+  ungroup() %>% 
+  summarise(dupes = sum(dupes, na.rm = T))
+
+```

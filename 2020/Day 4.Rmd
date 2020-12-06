@@ -10,8 +10,6 @@ library(tidyverse)
 
 Input
 ```{r}
-my_input <- read.delim("day_4_input.txt", sep = "\n\n", header = FALSE)
-
 my_input <- readLines("day_4_input.txt")
 my_input_tibble <- split(my_input, cumsum(rep(0, length(my_input)) + (my_input == ""))) %>% 
   map_chr(~paste(.x, collapse = " ") %>% str_trim) %>% 
