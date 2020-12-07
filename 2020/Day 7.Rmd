@@ -1,0 +1,159 @@
+---
+title: "Day 7"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(igraph)
+library(tcltk)
+```
+
+Input
+```{r}
+my_input <- read.csv("day_7_input.csv")
+```
+
+Part 1
+```{r}
+part_1 <-my_input %>% 
+  mutate(input = str_replace_all(input, "bags", ""),
+         input = str_replace_all(input, "bag", ""),
+         input = str_replace(input, "\\.", "")) %>% 
+  separate(input, into = c("from", "to"), sep = "contain") %>% 
+  separate_rows(to, sep = ",") %>% 
+  mutate(to = substr(to, 3, 100),
+         to = str_squish(to),
+         from = str_squish(from)) %>% 
+  filter(to != "o other")
+
+g <- graph_from_data_frame(part_1, directed=TRUE)
+
+upstream = shortest.paths(g, v = V(g), to = w, mode = "out") 
+names <- attributes(upstream)$dimnames[[1]]
+as_tibble(upstream) %>% 
+  mutate(names = names) %>% 
+  filter(`shiny gold` != "Inf") %>% 
+  distinct(names) %>% 
+  filter(names != "shiny gold")
+```
+
+Part 2
+```{r}
+part_2 <-my_input %>% 
+  mutate(input = str_replace_all(input, "bags", ""),
+         input = str_replace_all(input, "bag", ""),
+         input = str_replace(input, "\\.", "")) %>% 
+  separate(input, into = c("from", "to"), sep = "contain") %>% 
+  separate_rows(to, sep = ",") %>% 
+  mutate(number = substr(to, 1, 2),
+         number = as.numeric(number),
+         to = substr(to, 3, 100),
+         to = str_squish(to),
+         from = str_squish(from))
+
+add_bags <- function(bag){
+  if(bag != "o other" & !is.na(bag)){
+  part_2 %>% 
+  filter(from == bag)
+  } else {NA}
+}
+
+calc_bags <- function(df){
+number_of_bags <- df %>% 
+  filter(!is.na(to),
+         to != "o other") %>% 
+  count() %>% 
+  pull()
+
+df %>% 
+  mutate(sum = number_of_bags)
+}
+
+df <- part_2 %>% 
+  filter(from == "shiny gold") %>% 
+  rowwise() %>% 
+  slice(rep(1:n(), each = number)) %>% 
+  ungroup() %>% 
+  calc_bags() %>% 
+  rename(sum1 = sum) %>% 
+  select(-number) %>% 
+  rename(bag1 = from,
+         bag2 = to) %>% 
+  
+  mutate(bag3 = map(bag2, add_bags)) %>% 
+  unnest(bag3) %>% 
+  rowwise() %>% 
+  slice(rep(1:n(), each = number)) %>% 
+  ungroup() %>% 
+  calc_bags() %>% 
+  rename(sum2 = sum) %>% 
+  select(-number, -from) %>% 
+  rename(bag3 = to) %>% 
+  
+  mutate(bag4 = map(bag3, add_bags)) %>% 
+  unnest(bag4) %>% 
+  rowwise() %>% 
+  slice(rep(1:n(), each = number)) %>% 
+  ungroup() %>% 
+  calc_bags() %>% 
+  rename(sum3 = sum) %>% 
+  select(-number, -from, -bag4) %>% 
+  rename(bag4 = to) %>% 
+
+mutate(bag5 = map(bag4, add_bags)) %>% 
+  unnest(bag5) %>% 
+  rowwise() %>% 
+  slice(rep(1:n(), each = number)) %>% 
+  ungroup() %>% 
+  calc_bags() %>% 
+  rename(sum4 = sum) %>% 
+  select(-number, -from, -bag5) %>% 
+  rename(bag5 = to) %>% 
+
+mutate(bag6 = map(bag5, add_bags)) %>% 
+  unnest(bag6) %>% 
+  rowwise() %>% 
+  slice(rep(1:n(), each = number)) %>% 
+  ungroup() %>% 
+  calc_bags() %>% 
+  rename(sum5 = sum) %>% 
+  select(-number, -from, -bag6) %>% 
+  rename(bag6 = to) %>% 
+
+mutate(bag7 = map(bag6, add_bags)) %>% 
+  unnest(bag7) %>% 
+  rowwise() %>% 
+  slice(rep(1:n(), each = number)) %>% 
+  ungroup() %>% 
+  calc_bags() %>% 
+  rename(sum6 = sum) %>% 
+  select(-number, -from, -bag7) %>% 
+  rename(bag7 = to) %>% 
+
+mutate(bag8 = map(bag7, add_bags)) %>% 
+  unnest(bag8) %>% 
+  rowwise() %>% 
+  slice(rep(1:n(), each = number)) %>% 
+  ungroup() %>% 
+  calc_bags() %>% 
+  rename(sum7 = sum) %>% 
+  select(-number, -from, -bag8) %>% 
+  rename(bag8 = to) %>% 
+
+mutate(bag9 = map(bag8, add_bags)) %>% 
+  unnest(bag9) %>% 
+  rowwise() %>% 
+  slice(rep(1:n(), each = number)) %>% 
+  ungroup() %>% 
+  calc_bags() %>% 
+  rename(sum8 = sum) %>% 
+  select(-number, -from, -bag9) %>% 
+  rename(bag9 = to)
+
+df %>% 
+  mutate(sum = sum1 +  sum2 + sum3 + sum4 + sum5 + sum6 + sum7 + sum8)
+```
+
+
