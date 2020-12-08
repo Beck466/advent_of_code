@@ -1,0 +1,132 @@
+---
+title: "Day 8"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Input
+```{r}
+my_input <- read.csv("day_8_input.csv") %>% 
+  separate(input, into = c("instruction", "value"), sep = " ") %>% 
+  mutate(value = as.numeric(value))
+
+```
+
+Part 1
+```{r}
+visited = c()
+accumulator = 0
+i = 1
+
+while(!i %in% visited){
+  row_value <- my_input %>% 
+    slice(i)
+  
+  visited = c(visited, i)
+  
+  if(row_value$instruction == "acc"){
+    accumulator = accumulator + row_value$value
+    i = i+1
+  }
+  
+    if(row_value$instruction == "nop"){
+    i = i+1
+    }
+  
+      if(row_value$instruction == "jmp"){
+    i = i+row_value$value
+  }
+}
+```
+
+Part 2
+```{r}
+df <- my_input
+
+jmp_rows <- my_input %>% 
+  mutate(row = row_number()) %>% 
+  filter(instruction == "jmp") %>% 
+  pull(row)
+
+for (j in jmp_rows){
+df <- my_input
+df[j,1] <- "nop"
+  
+visited = c()
+accumulator = 0
+i = 1
+executed = FALSE
+
+while(!i %in% visited){
+  row_value <- df %>% 
+    slice(i)
+  
+  visited = c(visited, i)
+  
+  if(row_value$instruction == "acc"){
+    accumulator = accumulator + row_value$value
+    i = i+1
+  }
+  
+    if(row_value$instruction == "nop"){
+    i = i+1
+    }
+  
+      if(row_value$instruction == "jmp"){
+    i = i+row_value$value
+      }
+  
+  if(i >= nrow(df)){
+  executed = TRUE
+   final_acc <- accumulator
+}
+}
+
+}
+
+nop_rows <- my_input %>% 
+  mutate(row = row_number()) %>% 
+  filter(instruction == "nop") %>% 
+  pull(row)
+
+for (k in nop_rows){
+df <- my_input
+df[k,1] <- "jmp"
+  
+visited = c()
+accumulator = 0
+i = 1
+executed = FALSE
+
+while(!i %in% visited){
+  row_value <- df %>% 
+    slice(i)
+  
+  visited = c(visited, i)
+  
+  if(row_value$instruction == "acc"){
+    accumulator = accumulator + row_value$value
+    i = i+1
+  }
+  
+    if(row_value$instruction == "nop"){
+    i = i+1
+    }
+  
+      if(row_value$instruction == "jmp"){
+    i = i+row_value$value
+  }
+if(i >= nrow(df)){
+  executed = TRUE
+  final_acc <- accumulator
+}
+}
+}
+```
+
+
+
