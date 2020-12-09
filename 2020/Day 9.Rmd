@@ -1,0 +1,72 @@
+---
+title: "Day 9"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(zoo)
+```
+
+Input
+```{r}
+my_input <- read.csv("day_9_input.csv")
+```
+
+Part 1
+```{r}
+my_input
+stop = FALSE
+
+
+for(k in 1:1000){
+v <- my_input[k:(k+24), 1]
+available_options <- expand.grid(n1 = v, n2 = v) %>% 
+  mutate(sum = ifelse(n1 != n2, n1+n2, NA)) %>% 
+  pull(sum)
+
+if(!my_input[k + 25, 1] %in% available_options){
+  stop = TRUE
+  print(my_input[k + 25, 1])
+}
+if(stop){
+  break
+}
+}
+```
+
+Part 2
+```{r}
+new_data <- my_input %>% 
+  filter(input < my_input[k + 25, 1])
+stop = FALSE
+for(j in 1:100){
+dat <- new_data %>% 
+  mutate(rollsum = rollapply(input, j, sum, na.pad = TRUE)) %>% 
+  filter(rollsum == my_input[k + 25, 1])
+  
+  if(nrow(dat) > 0){
+    df <- new_data %>% 
+  mutate(rollsum = rollapply(input, j, sum, na.pad = TRUE, align = "right")) 
+    stop = TRUE
+  }
+if(stop){
+  break
+}
+}
+
+row <- df %>% 
+  mutate(number = row_number()) %>% 
+  filter(rollsum == my_input[k + 25, 1]) %>% 
+  pull(number)
+
+df_rows <- df %>% 
+  mutate(number = row_number()) %>% 
+  filter(number <= row,
+         number >= row - j+1) 
+
+max(df_rows$input) + min(df_rows$input)
+
+
+```
