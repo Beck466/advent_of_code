@@ -1,0 +1,78 @@
+---
+title: "Day 10"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(igraph)
+library(tidyverse)
+options(scipen = 666)
+```
+
+Input
+```{r}
+my_input <- read.csv("day_10_input.csv") %>% 
+  arrange(input)
+```
+
+Part 1
+```{r}
+df <- my_input %>% 
+  bind_rows(tibble(input = c(last(my_input$input) +3, 0))) %>% 
+  arrange(input) %>% 
+  mutate(diff = input - lag(input)) %>% 
+  # select(diff) %>% 
+  group_by(diff) %>% 
+  summarise(sum = n())
+
+df[[1,2]] * df[[2,2]]
+
+```
+
+Part 2
+```{r}
+data <- my_input %>% 
+  bind_rows(tibble(input = c(last(my_input$input) +3, 0))) %>% 
+  arrange(input) %>% 
+  mutate(diff1 = input - lag(input),
+         diff2 = input - lag(input, 2),
+         diff3 = input - lag(input, 3)) %>% 
+  pivot_longer(c(-input),
+               names_to = "diff",
+               values_to = "value") %>% 
+  filter(input == 0 | value %in% c(1,2,3)) %>% 
+  select(-diff) %>% 
+  mutate(from = input - value) %>% 
+  rename(to = input) %>% 
+  select(from, to) %>% 
+  filter(!is.na(from))
+
+find_paths <- function(input1, input2){
+   int_data <- data %>% 
+  filter(to > input1,
+         to <=input2)
+  
+graph <- graph_from_data_frame(int_data, directed=TRUE)
+
+length(all_simple_paths(graph, from = as.character(min(int_data$from)), to = as.character(max(int_data$to))))
+}
+
+#if the difference is 3 then this is a point of convergence.  Find all available paths between the points of convergence.
+my_input %>% 
+  bind_rows(tibble(input = c(last(my_input$input) +3, 0))) %>% 
+  arrange(input) %>% 
+  mutate(diff = input - lag(input)) %>% 
+  filter(diff == 3 | input == 0) %>% 
+  select(input) %>% 
+  mutate(input2 = lead(input)) %>% 
+  filter(!is.na(input2)) %>% 
+  rowwise() %>% 
+  mutate(paths = find_paths(input, input2)) %>% 
+  .$paths %>% 
+  prod()
+
+```
+
+
