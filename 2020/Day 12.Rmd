@@ -1,0 +1,167 @@
+---
+title: "Day 12"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Input
+```{r}
+my_input <- read.csv("day_12_input.csv") %>% 
+  mutate(input = str_squish(input),
+         direction = substr(input, 1,1),
+         step = substr(input, 2, 10),
+         step = as.numeric(step)) %>% 
+  select(-input)
+
+```
+
+Part 1
+```{r}
+directions <- tribble(~current_direction, ~turning_direction, ~turning_angle, ~new_direction,
+        "N", "L", 90, "W",
+        "N", "L", 180, "S",
+        "N", "L", 270, "E",
+        "N", "R", 90, "E",
+        "N", "R", 180, "S",
+        "N", "R", 270, "W",
+        "E", "L", 90, "N",
+        "E", "L", 180, "W",
+        "E", "L", 270, "S",
+        "E", "R", 90, "S",
+        "E", "R", 180, "W",
+        "E", "R", 270, "N",
+        "S", "L", 90, "E",
+        "S", "L", 180, "N",
+        "S", "L", 270, "W",
+        "S", "R", 90, "W",
+        "S", "R", 180, "N",
+        "S", "R", 270, "E",
+        "W", "L", 90, "S",
+        "W", "L", 180, "E",
+        "W", "L", 270, "N",
+        "W", "R", 90, "N",
+        "W", "R", 180, "E",
+        "W", "R", 270, "S"
+        )
+
+a = 0
+b = 0
+direction = "E"
+
+
+for (row in 1:nrow(my_input)) {
+  print(row)
+  my_input_row <- slice(my_input, row)
+    if(my_input_row$direction == "N"){
+    a <- a + my_input_row$step
+    }
+    if(my_input_row$direction == "E"){
+    b <- b + my_input_row$step
+    }
+    if(my_input_row$direction == "S"){
+    a <- a - my_input_row$step
+    }
+    if(my_input_row$direction == "W"){
+    b <- b - my_input_row$step
+    }
+    if(my_input_row$direction == "F"){
+       if(direction == "N"){
+       a <- a + my_input_row$step
+       }
+       if(direction == "E"){
+       b <- b + my_input_row$step
+       }
+       if(direction == "S"){
+       a <- a - my_input_row$step
+       }
+       if(direction == "W"){
+       b <- b - my_input_row$step
+       }
+    }
+    if(my_input_row$direction == "L" | my_input_row$direction == "R"){
+      direction <- directions %>% 
+        filter(current_direction == direction,
+               turning_direction == my_input_row$direction,
+               turning_angle == my_input_row$step) %>% 
+        pull(new_direction)
+    }
+}
+
+abs(a) + abs(b)
+```
+
+Part 2
+```{r}
+directions <- tribble(~turning_direction, ~turning_angle, ~new_x, ~new_y,
+        "L", 90, "-y", "x",
+        "L", 180, "-x", "-y",
+        "L", 270, "y", "-x",
+        "R", 90, "y", "-x",
+        "R", 180, "-x", "-y",
+        "R", 270, "-y", "x"
+        )
+
+a = 10 #(horizontal)
+b = 1 #(vertical)
+
+ship_a <- 0
+ship_b <- 0
+
+
+for (row in 1:nrow(my_input)) {
+  print(row)
+  my_input_row <- slice(my_input, row)
+    if(my_input_row$direction == "N"){
+    b <- b + my_input_row$step
+    }
+    if(my_input_row$direction == "E"){
+    a <- a + my_input_row$step
+    }
+    if(my_input_row$direction == "S"){
+    b <- b - my_input_row$step
+    }
+    if(my_input_row$direction == "W"){
+    a <- a - my_input_row$step
+    }
+    if(my_input_row$direction == "F"){
+       ship_a <- ship_a + my_input_row$step * a
+       ship_b <- ship_b + my_input_row$step * b
+    }
+    if(my_input_row$direction == "L" | my_input_row$direction == "R"){
+      if(my_input_row$step == 180){
+        # a1 <- a - ship_a
+        # b1 <- b - ship_b
+        # a <- -a1 + ship_a
+        # b <- -b1 + ship_b
+        a <- -a
+        b <- -b
+      }
+      if(my_input_row$step == 90 & my_input_row$direction == "L" | 
+         my_input_row$step == 270 & my_input_row$direction == "R" ){
+        # a1 <- a - ship_a
+        # b1 <- b - ship_b
+        # a <- -b1 + ship_b
+        # b <- a1 + ship_a
+        placeholder <- a
+        a <- -b
+        b <- placeholder
+      }
+      if(my_input_row$step == 90 & my_input_row$direction == "R" | 
+         my_input_row$step == 270 & my_input_row$direction == "L" ){
+        # a1 <- a - ship_a
+        # b1 <- b - ship_b
+        # a <- b1 + ship_b
+        # b <- -a1 + ship_a
+        placeholder <- a
+        a <- b
+        b <- -placeholder
+      }
+    }
+}
+
+abs(ship_a) + abs(ship_b)
+```

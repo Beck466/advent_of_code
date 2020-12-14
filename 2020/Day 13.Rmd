@@ -1,0 +1,98 @@
+---
+title: "Day 13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(numbers)
+options(scipen = 666)
+```
+
+Input
+```{r}
+
+time = 939
+my_input <- c(1789,37,47,1889)
+
+x = 0
+time = 1002461
+my_input <- c(29,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,x,41,x,x,x,x,x,x,x,x,x,521,x,x,x,x,x,x,x,23,x,x,x,x,13,x,x,x,17,x,x,x,x,x,x,x,x,x,x,x,x,x,601,x,x,x,x,x,37,x,x,x,x,x,x,x,x,x,x,x,x,19)
+```
+
+Part 1
+```{r}
+bus_29 <- tibble(times = seq(0, 29*1000000, by = 29)) %>% 
+  mutate(bus_29 = 1)
+bus_41 <- tibble(times = seq(0, 41*1000000, by = 41)) %>% 
+  mutate(bus_41 = 1)
+bus_521 <- tibble(times = seq(0, 521*1000000, by = 521)) %>% 
+  mutate(bus_521 = 1)
+bus_23 <- tibble(times = seq(0, 23*1000000, by = 23)) %>% 
+  mutate(bus_23 = 1)
+bus_13 <- tibble(times = seq(0, 13*1000000, by = 13)) %>% 
+  mutate(bus_13 = 1)
+bus_17 <- tibble(times = seq(0, 17*1000000, by = 17)) %>% 
+  mutate(bus_17 = 1)
+bus_601 <- tibble(times = seq(0, 601*1000000, by = 601)) %>% 
+  mutate(bus_601 = 1)
+bus_37 <- tibble(times = seq(0, 37*1000000, by = 37)) %>% 
+  mutate(bus_37 = 1)
+bus_19 <- tibble(times = seq(0, 19*1000000, by = 19)) %>% 
+  mutate(bus_19 = 1)
+
+tibble(times = seq(time, 2000000)) %>% 
+  mutate(times = as.numeric(times)) %>% 
+  left_join(bus_29, by = c("times")) %>% 
+  left_join(bus_41, by = c("times")) %>% 
+  left_join(bus_521, by = c("times")) %>% 
+  left_join(bus_23, by = c("times")) %>% 
+  left_join(bus_13, by = c("times")) %>% 
+  left_join(bus_17, by = c("times")) %>% 
+  left_join(bus_601, by = c("times")) %>% 
+  left_join(bus_37, by = c("times")) %>% 
+  left_join(bus_19, by = c("times")) %>% 
+  pivot_longer(cols = c(-times),
+               names_to = "bus",
+               values_to = "departed") %>% 
+  filter(!is.na(departed)) %>% 
+  slice(1)
+
+(1002468 - time)*601
+```
+
+Part 2
+```{r}
+compare <- my_input %>% 
+  as_tibble() %>% 
+  mutate(row = row_number()) %>% 
+  filter(value != 0) %>% 
+  mutate(row = row - 1) %>% 
+  mutate(remainder = value - row)
+
+chinese(compare$remainder, compare$value)
+
+#answer not working, assume in the ballpark, brute force the last bit
+
+t = 25029320182770
+
+repeat{
+  print(t)
+  t0 <- t*29
+  if((t0+19) %% 41 == 0 &
+     (t0+29) %% 521 == 0 &
+     (t0+37) %% 23 == 0 &
+     (t0+42) %% 13 == 0 &
+     (t0+46) %% 17 == 0 &
+     (t0+60) %% 601 == 0 &
+     (t0+66) %% 37 == 0 &
+     (t0+79) %% 19 == 0){
+    print(t0)
+    break
+  }
+  t <- t+1
+}
+```
+
+
