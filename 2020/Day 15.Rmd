@@ -1,0 +1,79 @@
+---
+title: "Day 15"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Input
+```{r}
+my_input <- c(8,0,17,4,1,12) %>% 
+  as_tibble() %>% 
+  mutate(row = row_number())
+```
+
+Part 1
+```{r}
+my_input
+
+input_table <- my_input
+
+for(i in 1:2050){
+last <- input_table %>% 
+  tail(1)
+
+previous <- input_table %>% 
+  filter(row != last$row)
+
+if(!last$value %in% previous$value){
+  new_row <- tibble(value = 0,
+                    row = last$row + 1)
+  
+  input_table <- input_table %>% 
+    bind_rows(new_row)
+    
+}
+
+if(last$value %in% previous$value){
+  new_row <- input_table %>% 
+    filter(value == last$value) %>% 
+    tail(2) %>% 
+    mutate(diff = lead(row) - row) %>% 
+    select(diff) %>% 
+    filter(!is.na(diff)) %>% 
+    rename(value = diff) %>% 
+    mutate(row = last$row + 1)
+  
+  input_table <- input_table %>% 
+    bind_rows(new_row)
+}
+
+}
+
+input_table %>% 
+  filter(row == 2020)
+```
+
+Part 2
+```{r}
+my_input <- c(8,0,17,4,1,12)
+
+prev <- 0
+turn <- rep(NA, 30000000)
+turn[1+my_input]<-seq_along(my_input)
+for (a in 7:30000000){
+  x <- turn[1+prev]
+  turn[1+prev] <- a
+  if(is.na(x)){
+    prev <- 0
+  } else {
+    prev <- a - x
+  }
+}
+
+which(turn %in% 30000000)-1
+```
+
