@@ -7,6 +7,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(cwhmisc)
+options(scipen = 666)
 ```
 
 Input
@@ -16,7 +17,7 @@ my_input_tibble <- split(my_input, cumsum(rep(0, length(my_input)) + (my_input =
   map_chr(~paste(.x, collapse = " ") %>% str_trim) %>% 
   as_tibble()
 
-paste(my_input, collapse = " ") %>% 
+input_df <- paste(my_input, collapse = " ") %>% 
   as_tibble() %>% 
   separate_rows(value, sep = "mask") %>% 
   separate(value, into = c(as.character(1:8)), sep = "mem") %>% 
@@ -33,15 +34,130 @@ paste(my_input, collapse = " ") %>%
          memory = str_replace(memory, "\\[", ""),
          memory = str_replace(memory, "\\]", ""),
          memory = as.numeric(memory))
-         value_2 = int2B(value, 2)
+         
 ```
 
 Part 1
 ```{r}
+convert_to_base2 <- function(value){
+  int2B(value, 2)[[1]]
+}
+
+convert_from_b2 <- function(x) {
+    y <- as.numeric(strsplit(x, "")[[1]])
+    sum(y * 2^rev((seq_along(y)-1)))
+}
+
+dat <- input_df %>% 
+  rowwise() %>% 
+  mutate(b2 = convert_to_base2(value),
+         b2 = str_pad(b2, 36, pad = "0", side = "left")) %>% 
+  ungroup() %>% 
+  mutate(new_value = 0)
+
+for (i in 1:465){
+mask <- dat %>% 
+  slice(i) %>% 
+  select(mask) %>% 
+  mutate(mask = strsplit(mask, "")) %>% 
+    unnest(mask)
+
+value <- dat %>% 
+  slice(i) %>% 
+  select(b2) %>% 
+  mutate(b2 = strsplit(b2, "")) %>% 
+    unnest(b2)
+
+nv <- tibble(mask, value) %>% 
+  mutate(new_value = ifelse(mask != "X", mask, b2)) %>% 
+  select(new_value) %>% 
+  pull() %>% 
+  glue::glue_collapse() %>% 
+  as.character() %>% 
+  convert()
+
+dat[i,5] <- nv
+}
+
+dat %>% 
+  select(memory, new_value) %>% 
+  group_by(memory) %>% 
+  slice_tail(1) %>% 
+  ungroup() %>% 
+  summarise_at("new_value", sum)
 
 ```
 
 Part 2
 ```{r}
+convert_to_base2 <- function(value){
+  int2B(value, 2)[[1]]
+}
 
+convert_from_b2 <- function(x) {
+    y <- as.numeric(strsplit(x, "")[[1]])
+    sum(y * 2^rev((seq_along(y)-1)))
+}
+
+dat <- input_df %>% 
+  rowwise() %>% 
+  mutate(b2 = convert_to_base2(memory),
+         b2 = str_pad(b2, 36, pad = "0", side = "left")) %>% 
+  ungroup() %>% 
+  mutate(new_memory = 0)
+
+datalist <- list()
+
+i = 1
+for (i in 1:465){
+mask <- dat %>% 
+  slice(i) %>% 
+  select(mask) %>% 
+  mutate(mask = strsplit(mask, "")) %>% 
+    unnest(mask)
+
+memory <- dat %>% 
+  slice(i) %>% 
+  select(b2) %>% 
+  mutate(b2 = strsplit(b2, "")) %>% 
+    unnest(b2)
+
+value <- dat %>% 
+  slice(i) %>% 
+  select(value) %>% 
+  pull()
+
+int_df <- tibble(mask, memory) %>% 
+  rowwise() %>% 
+  mutate(new_memory = case_when(mask == 1 ~ list(c("1")),
+                                mask == 0 ~ list(c(b2)),
+                                mask == "X" ~ list(c("0","1")))) %>% 
+  ungroup() %>% 
+  mutate(row = row_number()) %>% 
+  select(row, new_memory) %>% 
+  pivot_wider(names_from = row,
+              values_from = new_memory)
+
+for(j in colnames(int_df)){
+  int_df <- int_df %>% 
+    unnest(j)
+}
+
+int_df$new_memory <- apply(int_df[ ,colnames(int_df)], 1, paste, collapse = "")
+
+nm <- int_df %>% 
+  select(new_memory) %>% 
+  rowwise() %>% 
+  mutate(memory = convert(new_memory),
+         value = value) %>% 
+  select(-new_memory)
+
+datalist[i] <- list(nm)
+}
+
+final_list <- bind_rows(datalist) %>% 
+  group_by(memory) %>% 
+  slice_tail(1) %>% 
+  ungroup() %>% 
+  summarise_at("value", sum)
 ```
