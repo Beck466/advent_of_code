@@ -1,0 +1,47 @@
+---
+title: "Day 14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(cwhmisc)
+```
+
+Input
+```{r}
+my_input <- readLines("day_14_input.txt")
+my_input_tibble <- split(my_input, cumsum(rep(0, length(my_input)) + (my_input == ""))) %>% 
+  map_chr(~paste(.x, collapse = " ") %>% str_trim) %>% 
+  as_tibble()
+
+paste(my_input, collapse = " ") %>% 
+  as_tibble() %>% 
+  separate_rows(value, sep = "mask") %>% 
+  separate(value, into = c(as.character(1:8)), sep = "mem") %>% 
+  pivot_longer(cols = -`1`,
+               names_to = "names",
+               values_to = "values") %>% 
+  filter(!is.na(values)) %>% 
+  select(-names) %>% 
+  separate(values, into = c("memory", "value"), sep = "=") %>% 
+  rename(mask = `1`) %>% 
+  mutate(mask = str_replace(mask, "=", ""),
+         mask = str_squish(mask),
+         value = as.numeric(value),
+         memory = str_replace(memory, "\\[", ""),
+         memory = str_replace(memory, "\\]", ""),
+         memory = as.numeric(memory))
+         value_2 = int2B(value, 2)
+```
+
+Part 1
+```{r}
+
+```
+
+Part 2
+```{r}
+
+```
