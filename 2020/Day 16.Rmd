@@ -1,0 +1,213 @@
+---
+title: "Day 16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(rlang)
+```
+
+Input
+```{r}
+my_input <- readLines("day_16_input.txt") %>% 
+  as_tibble() %>% 
+  mutate(ticket = row_number()) %>% 
+  separate(value, into = as.character(c(1:20)))
+
+rules <- read.csv("day_16_rules.csv") %>% 
+  separate(rules, into = c("field", "rules"), sep = ":") %>% 
+  separate(rules, into = c("first", "second"), sep = "or") %>% 
+  separate(first, into = c("first_min", "first_max"), sep = "-") %>% 
+  separate(second, into = c("second_min", "second_max"), sep = "-")
+
+ticket <- c(97,103,89,191,73,79,83,101,151,71,149,53,181,59,61,67,113,109,107,127)
+```
+
+Part 1
+```{r}
+valid_numbers <- rules %>% 
+  mutate(first_min = as.numeric(first_min),
+         first_max = as.numeric(first_max),
+         second_min = as.numeric(second_min),
+         second_max = as.numeric(second_max)) %>% 
+  rowwise() %>% 
+  mutate(vector = list(c(first_min:first_max, second_min:second_max))) %>% 
+  unnest(vector) %>% 
+  distinct(vector) %>% 
+  arrange(vector) %>% 
+  pull()
+
+df <- my_input %>% 
+  pivot_longer(cols = c(-ticket)) %>% 
+  select(-name) %>% 
+  mutate(value = as.numeric(value),
+         valid = ifelse(value %in% valid_numbers, TRUE, FALSE)) %>% 
+  filter(!valid)
+
+sum(df$value)
+```
+
+Part 2
+```{r}
+valid_numbers <- rules %>% 
+  mutate(first_min = as.numeric(first_min),
+         first_max = as.numeric(first_max),
+         second_min = as.numeric(second_min),
+         second_max = as.numeric(second_max)) %>% 
+  rowwise() %>% 
+  mutate(vector = list(c(first_min:first_max, second_min:second_max))) %>% 
+  unnest(vector) %>% 
+  distinct(vector) %>% 
+  arrange(vector) %>% 
+  pull()
+
+valid_tickets <- my_input %>% 
+  pivot_longer(cols = c(-ticket)) %>% 
+  select(-name) %>% 
+  mutate(value = as.numeric(value),
+         valid = ifelse(value %in% valid_numbers, TRUE, FALSE)) %>% 
+  group_by(ticket) %>% 
+  mutate(valid = ifelse(all(valid), TRUE, FALSE)) %>% 
+  filter(valid)
+
+rule_values <- rules %>% 
+  mutate(first_min = as.numeric(first_min),
+         first_max = as.numeric(first_max),
+         second_min = as.numeric(second_min),
+         second_max = as.numeric(second_max)) %>% 
+  rowwise() %>% 
+  mutate(vector = list(c(first_min:first_max, second_min:second_max))) %>% 
+  unnest(vector) %>% 
+  select(field, vector)
+
+is_departure_location <- function(vector){
+  
+}
+
+df <- my_input %>% 
+  filter(ticket %in% unique(valid_tickets$ticket))
+
+
+departure_location <- c(NA)
+for (i in 1:20){
+  i = as.character(i)
+  if(all(
+    df[[i]] %in% (rule_values %>% 
+    filter(field == "departure location") %>% 
+    pull(vector))
+    )){
+    departure_location <- c(departure_location, i)
+    }
+}
+
+departure_station <- c(NA)
+for (i in 1:20){
+  i = as.character(i)
+  if(all(
+    df[[i]] %in% (rule_values %>% 
+    filter(field == "departure station") %>% 
+    pull(vector))
+    )){
+    departure_station <- c(departure_station, i)
+    }
+}
+
+departure_platform <- c(NA)
+for (i in 1:20){
+  i = as.character(i)
+  if(all(
+    df[[i]] %in% (rule_values %>% 
+    filter(field == "departure platform") %>% 
+    pull(vector))
+    )){
+    departure_platform <- c(departure_platform, i)
+    }
+}
+
+departure_track <- c(NA)
+for (i in 1:20){
+  i = as.character(i)
+  if(all(
+    df[[i]] %in% (rule_values %>% 
+    filter(field == "departure track") %>% 
+    pull(vector))
+    )){
+    departure_track <- c(departure_track, i)
+    }
+}
+
+departure_date <- c(NA)
+for (i in 1:20){
+  i = as.character(i)
+  if(all(
+    df[[i]] %in% (rule_values %>% 
+    filter(field == "departure date") %>% 
+    pull(vector))
+    )){
+    departure_date <- c(departure_date, i)
+    }
+}
+
+departure_time <- c(NA)
+for (i in 1:20){
+  i = as.character(i)
+  if(all(
+    df[[i]] %in% (rule_values %>% 
+    filter(field == "departure time") %>% 
+    pull(vector))
+    )){
+    departure_time <- c(departure_time, i)
+    }
+}
+
+departure_location
+departure_station
+departure_platform
+departure_track
+departure_date
+departure_time
+
+datalist <- list()
+
+for (j in rules$field){
+  datalist[j] <- c(NA)
+for (i in 1:20){
+  i = as.character(i)
+  if(all(
+    df[[i]] %in% (rule_values %>% 
+    filter(field == j) %>% 
+    pull(vector))
+    )){
+     datalist[[j]]  <- c(datalist[[j]] ,i)
+    }
+}
+}
+
+df_2 <- unlist(datalist) %>% 
+  as.data.frame() %>% 
+  rownames_to_column() %>% 
+  setNames(c("parameter", "column")) %>% 
+  mutate(parameter = str_remove(parameter, '[[:digit:]]+')) %>% 
+  filter(!is.na(column)) %>% 
+  mutate(value = NA,
+         column = as.character(column),
+         column = as.numeric(column))
+
+for(k in 1:20){
+  df_2 <- df_2 %>% 
+  group_by(parameter) %>% 
+  mutate(count = n()) %>% 
+  mutate(value = ifelse(count == 1, paste(column, "-", parameter), value),
+         remove = ifelse(!is.na(value), column, NA))
+  
+  df_2 <- df_2 %>% 
+    filter(!is.na(value) | !column %in% df_2$remove) %>% 
+    select(-count, remove)
+}
+
+ticket <- c(97,103,89,191,73,79,83,101,151,71,149,53,181,59,61,67,113,109,107,127)
+ticket[12] * ticket[15] * ticket[3] * ticket[5] * ticket[8] * ticket[17]
+```
+
